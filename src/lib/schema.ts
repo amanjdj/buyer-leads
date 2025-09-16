@@ -1,15 +1,14 @@
 import {
   pgTable,
-  uuid,
-  varchar,
+  serial,
   text,
-  integer,
   timestamp,
+  varchar,
+  uuid,
   pgEnum,
-  jsonb,
 } from "drizzle-orm/pg-core";
 
-// Enums
+// Enums for Postgres
 export const cityEnum = pgEnum("city", [
   "Chandigarh",
   "Mohali",
@@ -17,7 +16,7 @@ export const cityEnum = pgEnum("city", [
   "Panchkula",
   "Other",
 ]);
-export const propertyEnum = pgEnum("propertyType", [
+export const propertyEnum = pgEnum("property_type", [
   "Apartment",
   "Villa",
   "Plot",
@@ -49,32 +48,32 @@ export const statusEnum = pgEnum("status", [
   "Dropped",
 ]);
 
-// Buyers table
+// buyers table
 export const buyers = pgTable("buyers", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  fullName: varchar("fullName", { length: 80 }).notNull(),
-  email: varchar("email", { length: 100 }),
-  phone: varchar("phone", { length: 15 }).notNull(),
-  city: cityEnum("city").notNull(),
-  propertyType: propertyEnum("propertyType").notNull(),
-  bhk: bhkEnum("bhk"),
-  purpose: purposeEnum("purpose").notNull(),
-  budgetMin: integer("budgetMin"),
-  budgetMax: integer("budgetMax"),
-  timeline: timelineEnum("timeline").notNull(),
-  source: sourceEnum("source").notNull(),
-  status: statusEnum("status").default("New").notNull(),
-  notes: text("notes"),
-  tags: text("tags").array(),
-  ownerId: varchar("ownerId", { length: 50 }).notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  id: uuid("id").primaryKey(),
+  fullName: varchar("full_name", { length: 80 }),
+  email: varchar("email", { length: 255 }).default(""),
+  phone: varchar("phone", { length: 15 }),
+  city: cityEnum("city"),
+  propertyType: propertyEnum("property_type"),
+  bhk: bhkEnum("bhk").default("1"),
+  purpose: purposeEnum("purpose"),
+  budgetMin: serial("budget_min").default(0),
+  budgetMax: serial("budget_max").default(0),
+  timeline: timelineEnum("timeline"),
+  source: sourceEnum("source"),
+  status: statusEnum("status").default("New"),
+  notes: text("notes").default(""),
+  tags: text("tags").array().default([]),
+  ownerId: uuid("owner_id"),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Buyer history table
+// buyer_history table
 export const buyerHistory = pgTable("buyer_history", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  buyerId: uuid("buyerId").notNull(),
-  changedBy: varchar("changedBy", { length: 50 }).notNull(),
-  changedAt: timestamp("changedAt").defaultNow().notNull(),
-  diff: jsonb("diff"),
+  id: uuid("id").primaryKey(),
+  buyerId: uuid("buyer_id"),
+  changedBy: uuid("changed_by"),
+  changedAt: timestamp("changed_at").defaultNow(),
+  diff: text("diff"), // store JSON as string
 });
