@@ -1,14 +1,14 @@
 import {
   pgTable,
-  serial,
-  text,
-  timestamp,
-  varchar,
   uuid,
+  varchar,
+  text,
+  integer,
+  timestamp,
   pgEnum,
 } from "drizzle-orm/pg-core";
 
-// Enums for Postgres
+// Enums
 export const cityEnum = pgEnum("city", [
   "Chandigarh",
   "Mohali",
@@ -16,7 +16,7 @@ export const cityEnum = pgEnum("city", [
   "Panchkula",
   "Other",
 ]);
-export const propertyEnum = pgEnum("property_type", [
+export const propertyTypeEnum = pgEnum("property_type", [
   "Apartment",
   "Villa",
   "Plot",
@@ -48,32 +48,32 @@ export const statusEnum = pgEnum("status", [
   "Dropped",
 ]);
 
-// buyers table
+// Buyers table
 export const buyers = pgTable("buyers", {
   id: uuid("id").primaryKey(),
   fullName: varchar("full_name", { length: 80 }),
-  email: varchar("email", { length: 255 }).default(""),
+  email: varchar("email", { length: 255 }).$type<string | null>(),
   phone: varchar("phone", { length: 15 }),
   city: cityEnum("city"),
-  propertyType: propertyEnum("property_type"),
-  bhk: bhkEnum("bhk").default("1"),
+  propertyType: propertyTypeEnum("property_type"),
+  bhk: bhkEnum("bhk").$type<string | null>(),
   purpose: purposeEnum("purpose"),
-  budgetMin: serial("budget_min").default(0),
-  budgetMax: serial("budget_max").default(0),
+  budgetMin: integer("budget_min").$type<number | null>(),
+  budgetMax: integer("budget_max").$type<number | null>(),
   timeline: timelineEnum("timeline"),
   source: sourceEnum("source"),
   status: statusEnum("status").default("New"),
-  notes: text("notes").default(""),
-  tags: text("tags").array().default([]),
+  notes: text("notes").$type<string | null>(),
+  tags: text("tags").array().$type<string[] | null>(),
   ownerId: uuid("owner_id"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// buyer_history table
+// Buyer history
 export const buyerHistory = pgTable("buyer_history", {
   id: uuid("id").primaryKey(),
   buyerId: uuid("buyer_id"),
   changedBy: uuid("changed_by"),
   changedAt: timestamp("changed_at").defaultNow(),
-  diff: text("diff"), // store JSON as string
+  diff: text("diff"), // JSON stored as text
 });
